@@ -517,8 +517,19 @@
             const totalGridWidth = (2 * photoWidth) + horizontalGap;
             const totalGridHeight = (2 * photoHeight) + verticalGap;
             
-            const horizontalMargin = (pdfWidth - totalGridWidth) / 2; // Center horizontally
-            const verticalMargin = (pdfHeight - totalGridHeight) / 2; // Center vertically
+            // Since 251mm > 210mm (A4 width), we need to adjust
+            // Let's use landscape orientation to fit 2 columns of 125mm
+            const pdfLandscape = new jsPDF({
+                orientation: 'landscape',
+                unit: 'mm',
+                format: 'a4'
+            });
+
+            const landscapeWidth = pdfLandscape.internal.pageSize.getWidth(); // 297mm
+            const landscapeHeight = pdfLandscape.internal.pageSize.getHeight(); // 210mm
+            
+            const horizontalMargin = (landscapeWidth - totalGridWidth) / 2; // Center horizontally
+            const verticalMargin = (landscapeHeight - totalGridHeight) / 2; // Center vertically
 
             // Track loaded images
             let imagesLoaded = 0;
@@ -536,7 +547,7 @@
                         // Only add image if data exists for this cell
                         if (cellImageData[cellIndex]) {
                             // Add the image to PDF at exact size
-                            pdf.addImage(
+                            pdfLandscape.addImage(
                                 cellImageData[cellIndex], 
                                 'JPEG', 
                                 xPos, 
@@ -550,7 +561,7 @@
                 }
                 
                 // Save the PDF
-                pdf.save('photos-4-125x88.pdf');
+                pdfLandscape.save('photos-4-125x88-landscape.pdf');
                 status.textContent = 'PDF generated successfully! Check your downloads folder.';
             }
 
